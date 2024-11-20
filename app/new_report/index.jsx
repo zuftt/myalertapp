@@ -1,40 +1,70 @@
-import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
 import React, { useState } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import * as Location from 'expo-location';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { Picker } from '@react-native-picker/picker';
 import { db } from './../../app/config/FirebaseConfig'; // Adjust the import based on your project structure
-import { collection, addDoc, Timestamp } from 'firebase/firestore'; // Import Timestamp
-import { Picker } from '@react-native-picker/picker'; // Correct import
 
 export default function NewReport() {
     const [name, setName] = useState('');
     const [identificationNumber, setIdentificationNumber] = useState('');
     const [contactNumber, setContactNumber] = useState('');
     const [gender, setGender] = useState('male');
-    const [caseAddress, setCaseAddress] = useState('');
     const [caseType, setCaseType] = useState('Crimes');
     const [caseDetails, setCaseDetails] = useState('');
+    const [location, setLocation] = useState(null);
+    const [address, setAddress] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [errorMsg, setErrorMsg] = useState('');
+
+    // Function to fetch the user's location and reverse geocode to get address
+    const fetchLocation = async () => {
+        setLoading(true);
+        setErrorMsg('');
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                setErrorMsg('Permission to access location was denied');
+                return;
+            }
+            const locationData = await Location.getCurrentPositionAsync({});
+            const { latitude, longitude } = locationData.coords;
+            setLocation({ latitude, longitude });
+
+            // Reverse geocode to get the address
+            const addressData = await Location.reverseGeocodeAsync({ latitude, longitude });
+            if (addressData.length > 0) {
+                const { name, street, city, region, postalCode, country } = addressData[0];
+                setAddress(`${name || ''} ${street || ''}, ${city || ''}, ${region || ''} ${postalCode || ''}, ${country || ''}`);
+            }
+        } catch (error) {
+            setErrorMsg('Error fetching location');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Function to handle form submission
     const handleSubmit = async () => {
-        if (!name || !identificationNumber || !contactNumber || !caseAddress || !caseDetails) {
-            Alert.alert('Error', 'Please fill in all fields'); // Simple validation
+        if (!name || !identificationNumber || !contactNumber || !caseDetails || !location) {
+            Alert.alert('Error', 'Please fill in all fields and fetch location');
             return;
         }
 
         try {
-            // Create a new report in Firestore with a timestamp
             await addDoc(collection(db, 'Reports'), {
                 name,
                 identificationNumber,
                 contactNumber,
                 gender,
-                caseAddress,
                 caseType,
                 caseDetails,
-                createdAt: Timestamp.fromDate(new Date()), // Add a timestamp
+                location, // Store location as { latitude, longitude }
+                address, // Store the address
+                createdAt: Timestamp.fromDate(new Date()),
             });
 
             Alert.alert('Success', 'Report created successfully!');
-            // Optionally, reset the form
             resetForm();
         } catch (error) {
             console.error('Error creating report: ', error);
@@ -48,26 +78,19 @@ export default function NewReport() {
         setIdentificationNumber('');
         setContactNumber('');
         setGender('male');
-        setCaseAddress('');
         setCaseType('Crimes');
         setCaseDetails('');
+        setLocation(null);
+        setAddress('');
     };
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <Text style={styles.label}>Name</Text>
-            <TextInput
-                style={styles.input}
-                value={name}
-                onChangeText={setName}
-            />
+            <TextInput style={styles.input} value={name} onChangeText={setName} />
 
             <Text style={styles.label}>Identification Number</Text>
-            <TextInput
-                style={styles.input}
-                value={identificationNumber}
-                onChangeText={setIdentificationNumber}
-            />
+            <TextInput style={styles.input} value={identificationNumber} onChangeText={setIdentificationNumber} />
 
             <Text style={styles.label}>Contact Number</Text>
             <TextInput
@@ -79,31 +102,15 @@ export default function NewReport() {
 
             <Text style={styles.label}>Gender</Text>
             <View style={styles.pickerContainer}>
-                <Picker
-                    selectedValue={gender}
-                    style={styles.picker}
-                    onValueChange={(itemValue) => setGender(itemValue)}
-                >
+                <Picker selectedValue={gender} style={styles.picker} onValueChange={setGender}>
                     <Picker.Item label="Male" value="male" />
                     <Picker.Item label="Female" value="female" />
                 </Picker>
             </View>
 
-            <Text style={styles.label}>Case Address</Text>
-            <TextInput
-                style={styles.inputLarge}
-                value={caseAddress}
-                onChangeText={setCaseAddress}
-                multiline
-            />
-
             <Text style={styles.label}>Case Type</Text>
             <View style={styles.pickerContainer}>
-                <Picker
-                    selectedValue={caseType}
-                    style={styles.picker}
-                    onValueChange={(itemValue) => setCaseType(itemValue)}
-                >
+                <Picker selectedValue={caseType} style={styles.picker} onValueChange={setCaseType}>
                     <Picker.Item label="Crimes" value="Crimes" />
                     <Picker.Item label="Natural Disasters" value="Natural Disasters" />
                     <Picker.Item label="Health" value="Health" />
@@ -119,6 +126,20 @@ export default function NewReport() {
                 multiline
             />
 
+            {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+                <Button title="Get Location" onPress={fetchLocation} color="blue" />
+            )}
+
+            {errorMsg ? <Text style={styles.errorText}>{errorMsg}</Text> : null}
+            {location && (
+                <Text style={styles.locationText}>
+                    Location: Latitude {location.latitude}, Longitude {location.longitude}
+                </Text>
+            )}
+            {address ? <Text style={styles.addressText}>Address: {address}</Text> : null}
+
             <Button title="Submit Report" onPress={handleSubmit} color="orange" />
         </ScrollView>
     );
@@ -127,15 +148,9 @@ export default function NewReport() {
 const styles = StyleSheet.create({
     container: {
         padding: 20,
-        flexGrow: 1, // Make sure the container grows to fit content
+        flexGrow: 1,
         justifyContent: 'center',
-        backgroundColor: 'grey', // Set the background color to grey
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 20,
-        textAlign: 'center',
+        backgroundColor: 'grey',
     },
     label: {
         fontSize: 16,
@@ -144,17 +159,17 @@ const styles = StyleSheet.create({
     },
     input: {
         height: 40,
-        borderColor: 'white', // Border color for input fields
-        backgroundColor: 'white', // Set the background color to white
+        borderColor: 'white',
+        backgroundColor: 'white',
         borderWidth: 1,
         marginBottom: 15,
         paddingLeft: 10,
         borderRadius: 10,
     },
     inputLarge: {
-        height: 80, // Increased height for larger text input
-        borderColor: 'white', // Border color for larger input fields
-        backgroundColor: 'white', // Set the background color to white
+        height: 80,
+        borderColor: 'white',
+        backgroundColor: 'white',
         borderWidth: 1,
         marginBottom: 15,
         paddingLeft: 10,
@@ -164,14 +179,23 @@ const styles = StyleSheet.create({
         marginBottom: 15,
     },
     picker: {
-        height: 40,
-        borderColor: 'white', // Border color for input fields
-        backgroundColor: 'white', // Set the background color to white
-        borderWidth: 1,
-        marginBottom: 15,
-        paddingLeft: 10,
-        borderRadius: 10,
         height: 50,
         width: '100%',
+        backgroundColor: 'white',
+        borderRadius: 10,
+    },
+    errorText: {
+        color: 'red',
+        marginBottom: 10,
+    },
+    locationText: {
+        fontSize: 14,
+        color: 'green',
+        marginBottom: 15,
+    },
+    addressText: {
+        fontSize: 14,
+        color: 'blue',
+        marginBottom: 15,
     },
 });

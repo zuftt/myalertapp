@@ -7,12 +7,11 @@ import { collection, getDocs } from 'firebase/firestore';
 export default function Reports() {
   const [pastReports, setPastReports] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false); // State for refreshing
+  const [refreshing, setRefreshing] = useState(false);
   const router = useRouter();
 
-  // Function to fetch reports from Firestore
   const fetchReports = async () => {
-    setLoading(true); // Start loading when fetching reports
+    setLoading(true);
     try {
       const querySnapshot = await getDocs(collection(db, 'Reports'));
       const reportsData = querySnapshot.docs.map(doc => ({
@@ -27,11 +26,10 @@ export default function Reports() {
     }
   };
 
-  // Function to handle pull-to-refresh
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchReports(); // Fetch new reports
-    setRefreshing(false); // Stop refreshing
+    await fetchReports();
+    setRefreshing(false);
   };
 
   useEffect(() => {
@@ -40,6 +38,31 @@ export default function Reports() {
 
   const handleAddReport = () => {
     router.push('/new_report');
+  };
+
+  const handlePressReport = (rpt) => {
+    console.log("Selected Report ID:", rpt);
+  
+    // Format the createdAt date (assuming rpt.createdAt is a Firebase Timestamp object)
+    const formattedDate = rpt.createdAt.toDate().toLocaleString(); // Convert the Firebase timestamp to a readable string
+  
+    // Extract latitude and longitude
+    const { latitude, longitude } = rpt.location;
+  
+    // Log formatted date and location
+    console.log("Formatted Date:", formattedDate);
+    console.log("Location - Latitude:", latitude, "Longitude:", longitude);
+  
+    // Pass the necessary details to the ReportDetail page
+    router.push({
+      pathname: '/report_details',
+      params: {
+        ...rpt,             // Pass the full report object
+        formattedDate,      // Pass the formatted date
+        latitude,           // Pass latitude
+        longitude,          // Pass longitude
+      },
+    });
   };
 
   return (
@@ -52,16 +75,18 @@ export default function Reports() {
           data={pastReports}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <View style={styles.reportItem}>
-              <Text style={styles.reportText}>Case Type: {item.caseType}</Text>
-              <Text style={styles.reportText}>Created At: {item.createdAt.toDate().toString()}</Text>
-            </View>
+            <TouchableOpacity onPress={() => handlePressReport(item)}>
+              <View style={styles.reportItem}>
+                <Text style={styles.reportText}>Case Type: {item.caseType}</Text>
+                <Text style={styles.reportText}>Created At: {item.createdAt.toDate().toString()}</Text>
+              </View>
+            </TouchableOpacity>
           )}
           ListEmptyComponent={
-            <Text style={styles.noReportsText}>No previous reports</Text> // Display message when no reports
+            <Text style={styles.noReportsText}>No previous reports</Text>
           }
-          refreshing={refreshing} // Show refreshing state
-          onRefresh={onRefresh} // Handle refresh action
+          refreshing={refreshing}
+          onRefresh={onRefresh}
         />
       )}
 
@@ -78,7 +103,6 @@ const styles = StyleSheet.create({
     padding: 20,
     flex: 1,
     justifyContent: 'space-between',
-    
   },
   addButton: {
     backgroundColor: 'orange',
@@ -108,11 +132,20 @@ const styles = StyleSheet.create({
   },
   reportItem: {
     padding: 15,
-    backgroundColor: '#FDF6E4',
+    backgroundColor: '#FFF5E4',
     marginBottom: 10,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFD580',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
   reportText: {
-    fontSize: 14,
+    fontFamily: 'outfit',
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 4,
   },
 });
