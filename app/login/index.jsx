@@ -1,14 +1,15 @@
-import { View, Text, Image, ImageBackground, Pressable } from 'react-native';
+import { View, Text, Image, ImageBackground, Pressable, TouchableOpacity, Alert } from 'react-native';
 import React from 'react';
 import Colors from './../../constants/Colors';
 import * as WebBrowser from 'expo-web-browser';
 import { useOAuth } from '@clerk/clerk-expo';
 import * as Linking from 'expo-linking';
+import { useRouter } from 'expo-router';
+import * as Notifications from 'expo-notifications';
 
 export const useWarmUpBrowser = () => {
   React.useEffect(() => {
     // Warm up the android browser to improve UX
-    // https://docs.expo.dev/guides/authentication/#improving-user-experience
     void WebBrowser.warmUpAsync();
     return () => {
       void WebBrowser.coolDownAsync();
@@ -20,8 +21,31 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function LogInScreen() {
   useWarmUpBrowser();
-
+  const router = useRouter();
   const { startOAuthFlow } = useOAuth({ strategy: 'oauth_google' });
+
+  // Request notification permissions
+  const requestNotificationPermission = async () => {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+
+    // If permission has not been granted, ask for it
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    // Check the final status
+    if (finalStatus !== 'granted') {
+      console.error('Notification permission not granted');
+      Alert.alert('Permission required', 'Please enable notifications to stay updated.');
+      return false;
+    }
+
+    // Notifications permission granted
+    console.log('Notification permission granted');
+    return true;
+  };
 
   const onPress = React.useCallback(async () => {
     try {
@@ -30,14 +54,26 @@ export default function LogInScreen() {
       });
 
       if (createdSessionId) {
-        // Handle successful session creation
-      } else {
-        // Use signIn or signUp for next steps such as MFA
+        await setActive({ session: createdSessionId });
+      } else if (signIn) {
+        await setActive(signIn.createdSessionId);
+      } else if (signUp) {
+        await setActive(signUp.createdSessionId);
+      }
+
+      // Ask for notification permissions after sign-in
+      const notificationGranted = await requestNotificationPermission();
+      if (notificationGranted) {
+        console.log('Notifications enabled successfully!');
       }
     } catch (err) {
       console.error('OAuth error', err);
     }
   }, [startOAuthFlow]);
+
+  const onAdminPress = () => {
+    router.push('/admin'); // Navigate to the /admin route
+  };
 
   return (
     <ImageBackground
@@ -90,7 +126,7 @@ export default function LogInScreen() {
           onPress={onPress}
           style={{
             padding: 15,
-            marginTop: 100,
+            marginTop: 40,
             backgroundColor: '#ff8c00', // More vibrant orange color
             width: '80%',
             borderRadius: 14,
@@ -114,6 +150,20 @@ export default function LogInScreen() {
             Get started
           </Text>
         </Pressable>
+        <TouchableOpacity onPress={onAdminPress}>
+          <Text
+            style={{
+              fontFamily: 'outfit',
+              fontSize: 14,
+              textAlign: 'center',
+              color: '#ffffff', // White text for contrast
+              textDecorationLine: 'underline', // Underline text
+              marginTop: 30, // Add some space above the admin text
+            }}
+          >
+            Admin
+          </Text>
+        </TouchableOpacity>
       </View>
     </ImageBackground>
   );

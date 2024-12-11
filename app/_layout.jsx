@@ -71,6 +71,20 @@ export default function RootLayout() {
             
           }}
         />
+        <Stack.Screen
+          name="feedback/index"
+          options={{
+            title:'Submit your feedback',
+            
+          }}
+        />
+        <Stack.Screen
+          name="admin/index"
+          options={{
+            title:'Login',
+            
+          }}
+        />
       </Stack>
     </ClerkProvider>
   );
