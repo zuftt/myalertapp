@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, Timestamp,doc, getDoc } from 'firebase/firestore';
 import { Picker } from '@react-native-picker/picker';
+import { useUser } from '@clerk/clerk-expo';
 import { db } from './../../app/config/FirebaseConfig'; // Adjust the import based on your project structure
 
 export default function NewReport() {
+    const { user } = useUser();
     const [name, setName] = useState('');
     const [identificationNumber, setIdentificationNumber] = useState('');
     const [contactNumber, setContactNumber] = useState('');
@@ -16,6 +18,7 @@ export default function NewReport() {
     const [address, setAddress] = useState('');
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
+    
 
     // Function to fetch the user's location and reverse geocode to get address
     const fetchLocation = async () => {
@@ -50,9 +53,10 @@ export default function NewReport() {
             Alert.alert('Error', 'Please fill in all fields and fetch location');
             return;
         }
-
+    
         try {
-            await addDoc(collection(db, 'Reports'), {
+            // Save report to Firestore
+            const reportRef = await addDoc(collection(db, 'Reports'), {
                 name,
                 identificationNumber,
                 contactNumber,
@@ -62,8 +66,23 @@ export default function NewReport() {
                 location, // Store location as { latitude, longitude }
                 address, // Store the address
                 createdAt: Timestamp.fromDate(new Date()),
+                isOpened: false, // Default to false
+                verified: false, // Default to false
+                user: {
+                    name: user.fullName || 'Anonymous', // Use user name if available, fallback to 'Anonymous'
+                    email: user.primaryEmailAddress?.emailAddress || 'No Email',
+                }
             });
-
+    
+            // Assuming you save the user's push token in Firestore and it's linked to the user
+            const userTokenRef = await getDoc(doc(db, 'Users', user.id));
+            const userToken = userTokenRef.data()?.pushToken; // Get the user's push token from Firestore
+    
+            // Send a push notification to the user after report submission
+            if (userToken) {
+                await sendPushNotification(userToken, 'Report Submitted', 'Your report has been successfully submitted.');
+            }
+    
             Alert.alert('Success', 'Report created successfully!');
             resetForm();
         } catch (error) {

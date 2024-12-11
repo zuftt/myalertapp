@@ -15,15 +15,18 @@ export default function Maps() {
     try {
       // Fetch case data from Firestore
       const querySnapshot = await getDocs(collection(db, 'Reports'));
-      const casesData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const casesData = querySnapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .filter(caseItem => caseItem.verified); // Filter to include only verified cases
+  
       setCases(casesData);
     } catch (error) {
       console.error("Error fetching case data: ", error);
     }
-
+  
     // Get user's location
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
@@ -31,7 +34,7 @@ export default function Maps() {
       setLoading(false); // Stop loading if permission is denied
       return;
     }
-
+  
     try {
       const location = await Location.getCurrentPositionAsync({});
       setUserLocation({
@@ -44,6 +47,7 @@ export default function Maps() {
       setLoading(false); // Stop loading once data is fetched
     }
   };
+  
 
   useEffect(() => {
     fetchData();
