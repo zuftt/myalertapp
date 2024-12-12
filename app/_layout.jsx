@@ -85,7 +85,15 @@ export default function RootLayout() {
             
           }}
         />
+        <Stack.Screen
+          name="admin/create_alert"
+          options={{
+            title:'Create an alert',
+            
+          }}
+        />
       </Stack>
+      
     </ClerkProvider>
   );
 }
