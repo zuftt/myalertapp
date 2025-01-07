@@ -7,34 +7,43 @@ import { db } from './../../app/config/FirebaseConfig'; // Adjust path as necess
 
 export default function Maps() {
   const [cases, setCases] = useState([]);
+  const [alerts, setAlerts] = useState([]); // New state for Alerts
   const [userLocation, setUserLocation] = useState(null);
-  const [loading, setLoading] = useState(true); // New loading state
+  const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     setLoading(true);
     try {
       // Fetch case data from Firestore
-      const querySnapshot = await getDocs(collection(db, 'Reports'));
-      const casesData = querySnapshot.docs
+      const caseQuerySnapshot = await getDocs(collection(db, 'Reports'));
+      const casesData = caseQuerySnapshot.docs
         .map(doc => ({
           id: doc.id,
           ...doc.data(),
         }))
         .filter(caseItem => caseItem.verified); // Filter to include only verified cases
-  
       setCases(casesData);
+
+      // Fetch alerts data from Firestore
+      const alertQuerySnapshot = await getDocs(collection(db, 'Alerts'));
+      const alertsData = alertQuerySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setAlerts(alertsData);
+
     } catch (error) {
-      console.error("Error fetching case data: ", error);
+      console.error("Error fetching data: ", error);
     }
-  
+
     // Get user's location
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert("Permission denied", "Allow location permissions to display your location.");
-      setLoading(false); // Stop loading if permission is denied
+      setLoading(false);
       return;
     }
-  
+
     try {
       const location = await Location.getCurrentPositionAsync({});
       setUserLocation({
@@ -44,16 +53,14 @@ export default function Maps() {
     } catch (error) {
       Alert.alert("Error", "Failed to fetch location");
     } finally {
-      setLoading(false); // Stop loading once data is fetched
+      setLoading(false);
     }
   };
-  
 
   useEffect(() => {
     fetchData();
-  }, []); // Fetch data on initial render
+  }, []);
 
-  // Show loading indicator while fetching user's location and cases
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -72,7 +79,7 @@ export default function Maps() {
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         }}
-        showsUserLocation={true} // Enable built-in user location marker
+        showsUserLocation={true}
       >
         {/* Case Markers */}
         {cases.map(caseItem => (
@@ -84,10 +91,38 @@ export default function Maps() {
                 longitude: caseItem.location.longitude,
               }}
               title={caseItem.caseType}
-              description={`${caseItem.caseDetails} `}
+              description={`${caseItem.caseDetails}`}
+              pinColor="blue" // Set distinct pin color for Reports
             />
           )
         ))}
+
+        {/* Alerts Markers */}
+{alerts.map(alertItem => {
+  // Ensure latitude and longitude are available
+  const latitude = alertItem.latitude || (alertItem.location && alertItem.location.latitude);
+  const longitude = alertItem.longitude || (alertItem.location && alertItem.location.longitude);
+
+  // Render marker only if valid coordinates are available
+  if (latitude && longitude) {
+    return (
+      <Marker
+        key={alertItem.id}
+        coordinate={{
+          latitude,
+          longitude,
+        }}
+        title={alertItem.title || "No Title"} // Fallback for missing title
+        description={alertItem.description || "No Description"} // Fallback for missing description
+        pinColor="red" // Distinct color for Alerts
+      />
+    );
+  }
+
+  // Skip if no valid coordinates
+  return null;
+})}
+
       </MapView>
 
       {/* Refresh Button */}
