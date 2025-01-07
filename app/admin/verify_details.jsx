@@ -18,15 +18,18 @@ export default function ReportDetail() {
 
   const handleVerification = async (status) => {
     const reportRef = doc(db, 'Reports', rpt.id); // Get reference to the report document
-
+  
     try {
+      // If status is true, set verified to true; if status is false, set verified to false
+      const updatedStatus = status; // Directly use the status value (true or false)
+  
       await updateDoc(reportRef, {
-        verified: status, // Update the verified field in Firebase
+        verified: updatedStatus, // Update the 'verified' field in Firebase
       });
-
+  
       // Show a success message after the update
       Alert.alert('Success', `Report has been ${status ? 'verified' : 'rejected'}.`);
-
+  
       // Optionally, navigate back or update UI to reflect changes
       navigation.goBack();
     } catch (error) {
@@ -34,6 +37,9 @@ export default function ReportDetail() {
       Alert.alert('Error', 'Failed to update the report status.');
     }
   };
+  
+  
+  
 
   return (
     <ScrollView style={styles.container}>
