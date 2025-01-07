@@ -13,7 +13,9 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zuft3312.myalertapp",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +25,8 @@
           "ACCESS_FINE_LOCATION"
         ]
       },
-      "package": "com.zuft_3312.myalertapp"
+      "package": "com.zuft_3312.myalertapp",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -42,7 +45,9 @@
       "router": {
         "origin": false
       },
-     
+      "eas": {
+        "projectId": "89665ab8-5cc5-4a99-ba65-05396124f0f8"
+      }
     }
   }
 }

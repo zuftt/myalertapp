@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "805278798970",
+    "project_id": "alert-app-6b760",
+    "storage_bucket": "alert-app-6b760.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805278798970:android:ae90e96aa1761e0838d7c3",
+        "android_client_info": {
+          "package_name": "com.zuft_3312.myalertapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTM2gDB8cRyaHQTxg4Zo1zCaqeGLfp7tU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
