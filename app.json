@@ -4,28 +4,27 @@
     "slug": "myalertapp",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/android.png",
     "scheme": "myalertapp",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.zuft3312.myalertapp",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "icon": "./assets/images/ios.png"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff",
-        "permissions": [
-          "ACCESS_FINE_LOCATION"
-        ]
+        "foregroundImage": "./assets/images/android.png",
+        "backgroundColor": "#ffffff"
       },
       "package": "com.zuft_3312.myalertapp",
+      "permissions": ["ACCESS_FINE_LOCATION"],
       "googleServicesFile": "./google-services.json"
     },
     "web": {
@@ -33,11 +32,7 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "plugins": [
-      "expo-router",
-      "expo-font",
-      "expo-secure-store"
-    ],
+    "plugins": ["expo-router", "expo-font", "expo-secure-store"],
     "experiments": {
       "typedRoutes": true
     },
