@@ -1,30 +1,40 @@
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import React from 'react';
-import { useUser, useAuth } from '@clerk/clerk-expo';
-import { useRouter } from 'expo-router';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import React, { useState, useEffect } from "react";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { useRouter } from "expo-router";
 
 export default function Profile() {
-  const { user } = useUser();
-  const { signOut } = useAuth();
-  const router = useRouter(); // Use the router for navigation
+  const [user, setUser] = useState(null); // Store the current user
+  const router = useRouter();
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser); // Set the user from Firebase Auth
+    });
+
+    return () => unsubscribe(); // Cleanup subscription on unmount
+  }, []);
 
   // Navigate to Feedback Screen
   const handleFeedback = () => {
-    router.push('/feedback'); // Redirect to feedback screen
+    router.push("/feedback");
   };
 
   // Navigate to Reports Screen
   const handlePastReports = () => {
-    router.push('/reports'); // Redirect to reports screen
+    router.push("/reports");
   };
 
+  // Handle Logout
   const handleLogout = async () => {
     try {
-      await signOut();
-      Alert.alert('Logout', 'You have been logged out successfully!');
-      router.replace('/login'); // Redirect to login page after logout
+      const auth = getAuth();
+      await signOut(auth);
+      Alert.alert("Logout", "You have been logged out successfully!");
+      router.replace("/login"); // Redirect to login page after logout
     } catch (error) {
-      Alert.alert('Error', 'Something went wrong during logout.');
+      Alert.alert("Error", "Something went wrong during logout.");
     }
   };
 
@@ -35,14 +45,16 @@ export default function Profile() {
 
       {/* Profile Header */}
       <View style={styles.profileHeader}>
-        {user?.imageUrl && (
-          <Image
-            source={{ uri: user.imageUrl }}
-            style={styles.profileImage}
-          />
-        )}
-        <Text style={styles.userName}>{user?.fullName}</Text>
-        <Text style={styles.userEmail}>{user.primaryEmailAddress?.emailAddress}</Text>
+        <Image
+          source={
+            user?.photoURL
+              ? { uri: user.photoURL }
+              : require("./../../assets/images/default.jpg") // Local placeholder image
+          }
+          style={styles.profileImage}
+        />
+        <Text style={styles.userName}>{user?.displayName || "Guest User"}</Text>
+        <Text style={styles.userEmail}>{user?.email}</Text>
       </View>
 
       {/* Feedback Button */}
@@ -56,7 +68,10 @@ export default function Profile() {
       </TouchableOpacity>
 
       {/* Logout Button */}
-      <TouchableOpacity style={[styles.button, styles.logoutButton]} onPress={handleLogout}>
+      <TouchableOpacity
+        style={[styles.button, styles.logoutButton]}
+        onPress={handleLogout}
+      >
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
     </View>
@@ -67,52 +82,54 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
   },
   pageTitle: {
-    fontFamily: 'outfit-medium',
+    fontFamily: "outfit-medium",
     fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    fontWeight: "bold",
+    textAlign: "center",
     marginBottom: 30,
-    color: '#333',
+    color: "#333",
   },
   profileHeader: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 40,
   },
   profileImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50, // Ensures the image is circular
     marginBottom: 15,
+    borderWidth: 2,
+    borderColor: "#FFD580", // Optional border for better styling
   },
   userName: {
-    fontFamily: 'outfit-medium',
+    fontFamily: "outfit-medium",
     fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
   },
   userEmail: {
-    fontFamily: 'outfit',
+    fontFamily: "outfit",
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginTop: 5,
   },
   button: {
-    backgroundColor: 'orange',
+    backgroundColor: "orange",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 15,
   },
   buttonText: {
-    fontFamily: 'outfit-medium',
+    fontFamily: "outfit-medium",
     fontSize: 16,
-    color: '#fff',
+    color: "#fff",
   },
   logoutButton: {
-    backgroundColor: '#d9534f', // Red for logout
+    backgroundColor: "#d9534f", // Red for logout
   },
 });

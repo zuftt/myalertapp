@@ -1,34 +1,39 @@
-import { useUser, ClerkLoaded } from "@clerk/clerk-expo";
-import { Redirect, useRootNavigationState } from "expo-router";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default function Index() {
-  const { user } = useUser();
-  const rootNavigationState = useRootNavigationState();
-  const [navigationReady, setNavigationReady] = useState(false);
+  const router = useRouter(); // Initialize the router for navigation
+  const [loading, setLoading] = useState(true); // Manage loading state
 
   useEffect(() => {
-    if (rootNavigationState?.key) {
-      setNavigationReady(true);
-    }
-  }, [rootNavigationState]);
+    const auth = getAuth();
 
-  // Wait for both navigation and Clerk to be ready
-  if (!navigationReady) {
-    return <Text>Loading navigation...</Text>;
+    // Listen for changes to the authentication state
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setLoading(false); // Once authentication is checked, stop loading
+
+      if (user) {
+        // Redirect to home if the user is logged in
+        router.replace("/(tabs)/home");
+      } else {
+        // Redirect to login if the user is not logged in
+        router.replace("/login");
+      }
+    });
+
+    // Cleanup the listener when the component is unmounted
+    return () => unsubscribe();
+  }, [router]);
+
+  if (loading) {
+    return <Text>Loading navigation...</Text>; // Display a loading message while preparing navigation
   }
 
   return (
-    <ClerkLoaded>
-      <View style={{ flex: 1 }}>
-        {user ? (
-          <Redirect href="/(tabs)/home" /> // Redirect to home if user is logged in
-        ) : (
-          <Redirect href="/login" /> // Redirect to login if user is not authenticated
-        )}
-      </View>
-    </ClerkLoaded>
+    <View style={{ flex: 1 }}>
+      <Text>Redirecting...</Text> {/* Fallback UI (optional) */}
+    </View>
   );
 }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
