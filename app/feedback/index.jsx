@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import { useUser } from '@clerk/clerk-expo';
+
 import { db } from './../../app/config/FirebaseConfig'; // Adjust the path to FirebaseConfig based on your project structure
 
 export default function Feedback() {
-  const { user } = useUser();
+
   const [feedback, setFeedback] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -19,10 +19,7 @@ export default function Feedback() {
     try {
       await addDoc(collection(db, 'Feedback'), {
         feedback,
-        user: {
-            name: user.fullName || 'Anonymous', // Use user name if available, fallback to 'Anonymous'
-            email: user.primaryEmailAddress?.emailAddress || 'No Email',
-          },
+        
         createdAt: Timestamp.fromDate(new Date()),
       });
 

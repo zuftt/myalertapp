@@ -1,8 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'expo-router';
-import { db } from './../../app/config/FirebaseConfig'; 
-import { collection, getDocs } from 'firebase/firestore';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from "react-native";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "expo-router";
+import { db } from "./../../app/config/FirebaseConfig"; 
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 export default function Reports() {
   const [pastReports, setPastReports] = useState([]);
@@ -13,14 +14,25 @@ export default function Reports() {
   const fetchReports = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, 'Reports'));
-      const reportsData = querySnapshot.docs.map(doc => ({
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
+
+      if (!currentUser) {
+        console.error("No user is logged in.");
+        setLoading(false);
+        return;
+      }
+
+      // Query the user's specific reports
+      const reportsRef = collection(db, "Users", currentUser.uid, "Reports");
+      const querySnapshot = await getDocs(reportsRef);
+      const reportsData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
       setPastReports(reportsData);
     } catch (error) {
-      console.error('Error fetching reports: ', error);
+      console.error("Error fetching reports: ", error);
     } finally {
       setLoading(false);
     }
@@ -37,30 +49,30 @@ export default function Reports() {
   }, []);
 
   const handleAddReport = () => {
-    router.push('/new_report');
+    router.push("/new_report");
   };
 
   const handlePressReport = (rpt) => {
     console.log("Selected Report ID:", rpt);
-  
+
     // Format the createdAt date (assuming rpt.createdAt is a Firebase Timestamp object)
     const formattedDate = rpt.createdAt.toDate().toLocaleString(); // Convert the Firebase timestamp to a readable string
-  
+
     // Extract latitude and longitude
     const { latitude, longitude } = rpt.location;
-  
+
     // Log formatted date and location
     console.log("Formatted Date:", formattedDate);
     console.log("Location - Latitude:", latitude, "Longitude:", longitude);
-  
+
     // Pass the necessary details to the ReportDetail page
     router.push({
-      pathname: '/report_details',
+      pathname: "/report_details",
       params: {
-        ...rpt,             // Pass the full report object
-        formattedDate,      // Pass the formatted date
-        latitude,           // Pass latitude
-        longitude,          // Pass longitude
+        ...rpt, // Pass the full report object
+        formattedDate, // Pass the formatted date
+        latitude, // Pass latitude
+        longitude, // Pass longitude
       },
     });
   };
@@ -102,50 +114,50 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     padding: 20,
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   addButton: {
-    backgroundColor: 'orange',
+    backgroundColor: "orange",
     padding: 10,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 20,
   },
   addButtonText: {
-    fontFamily: 'outfit',
-    color: 'white',
+    fontFamily: "outfit",
+    color: "white",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   sliderTitle: {
-    fontFamily: 'outfit',
+    fontFamily: "outfit",
     fontSize: 30,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   noReportsText: {
-    fontFamily: 'outfit',
+    fontFamily: "outfit",
     fontSize: 16,
-    color: '#888',
-    textAlign: 'center',
+    color: "#888",
+    textAlign: "center",
     marginTop: 20,
   },
   reportItem: {
     padding: 15,
-    backgroundColor: '#FFF5E4',
+    backgroundColor: "#FFF5E4",
     marginBottom: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#FFD580',
-    shadowColor: '#000',
+    borderColor: "#FFD580",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
   },
   reportText: {
-    fontFamily: 'outfit',
+    fontFamily: "outfit",
     fontSize: 16,
-    color: '#333',
+    color: "#333",
     marginBottom: 4,
   },
 });

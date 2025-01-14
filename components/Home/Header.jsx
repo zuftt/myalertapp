@@ -1,33 +1,31 @@
-import { View, Text, Image, StyleSheet } from 'react-native';
-import React, { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-expo';
+import { View, Text, Image, StyleSheet } from "react-native";
+import React, { useState, useEffect } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 export default function Header() {
-  const { user } = useUser();
-  const [key, setKey] = useState(0);
+  const [user, setUser] = useState(null); // State to store the current user
 
   useEffect(() => {
-    // Update the key whenever the user changes or component remounts
-    setKey((prevKey) => prevKey + 1);
-  }, [user]);
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser); // Set the user from Firebase Auth
+    });
 
-  // Split the full name into parts (first and second word)
-  const nameParts = user?.fullName?.split(' ');
-  const firstName = nameParts?.[0];
-  const secondName = nameParts?.[1] || '';
+    return () => unsubscribe(); // Cleanup subscription on unmount
+  }, []);
+
+  const displayName = user?.displayName || user?.email || "Guest"; // Use name or email or fallback to 'Guest'
 
   return (
-    <View key={key} style={styles.container}>
+    <View style={styles.container}>
       <View>
         <Text style={styles.greetingText}>Welcome,</Text>
-        <Text style={styles.nameText}>
-          {firstName} {secondName}
-        </Text>
+        <Text style={styles.nameText}>{displayName}</Text>
       </View>
 
-      {user?.imageUrl && (
+      {user?.photoURL && (
         <Image
-          source={{ uri: user.imageUrl }}
+          source={{ uri: user.photoURL }}
           style={styles.profileImage}
         />
       )}
@@ -37,18 +35,21 @@ export default function Header() {
 
 const styles = StyleSheet.create({
   container: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
   },
   greetingText: {
     fontFamily: 'outfit',
     fontSize: 18,
   },
   nameText: {
-    fontFamily: 'outfit-medium',
+    fontFamily: "outfit-medium", // Use 'outfit-medium' font
     fontSize: 18,
+    fontWeight: "bold",
+    
   },
   profileImage: {
     width: 40,
