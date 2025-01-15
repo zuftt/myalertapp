@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 
-import { db } from './../../app/config/FirebaseConfig'; // Adjust the path to FirebaseConfig based on your project structure
+import { db } from '../../config/FirebaseConfig'; // Adjust the path to FirebaseConfig based on your project structure
 
 export default function Feedback() {
 

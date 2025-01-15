@@ -33,7 +33,7 @@ export default function Index() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Text>Redirecting...</Text> {/* Fallback UI (optional) */}
+      <Text>Redirecting...</Text>
     </View>
   );
 }
