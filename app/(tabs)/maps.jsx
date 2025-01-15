@@ -9,7 +9,7 @@ import {
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../config/FirebaseConfig"; // Adjust path as necessary
+import { db } from "../../firebase"; // Adjust path as necessary
 
 export default function Maps() {
   const [cases, setCases] = useState([]);

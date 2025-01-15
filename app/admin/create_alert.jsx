@@ -5,7 +5,7 @@ import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
 import { useRouter } from 'expo-router';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../config/FirebaseConfig'; // Adjust the import according to your project structure
+import { db } from '../../firebase'; // Adjust the import according to your project structure
 
 const CreateAlert = () => {
   const [title, setTitle] = useState('');

@@ -1,7 +1,7 @@
 import { View, StyleSheet, Image, Dimensions } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../config/FirebaseConfig';
+import { db } from '../../firebase';
 import { FlatList } from 'react-native';
 
 export default function Slider() {
