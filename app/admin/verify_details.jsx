@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'rea
 import React, { useEffect } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { useNavigation } from 'expo-router';
-import { db } from './../../app/config/FirebaseConfig';  // Import your Firebase config
+import { db } from '../../config/FirebaseConfig';  // Import your Firebase config
 import { doc, updateDoc } from 'firebase/firestore'; // Firebase functions to update data
 
 export default function ReportDetail() {

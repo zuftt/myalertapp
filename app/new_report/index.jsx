@@ -12,7 +12,7 @@ import {
 import * as Location from "expo-location";
 import { collection, addDoc, Timestamp, doc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { db } from "./../../app/config/FirebaseConfig"; // Adjust the import based on your project structure
+import { db } from "../../config/FirebaseConfig"; // Adjust the import based on your project structure
 import { Picker } from "@react-native-picker/picker";
 
 export default function NewReport() {

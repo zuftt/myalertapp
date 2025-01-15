@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from './../../app/config/FirebaseConfig'; // Import the Firebase configuration
+import { auth } from '../../config/FirebaseConfig'; // Import the Firebase configuration
 
 // To remove the header in Expo Router
 export const options = {
