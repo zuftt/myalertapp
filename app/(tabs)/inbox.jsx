@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
-import { db } from "../../config/FirebaseConfig"; // Adjust path as necessary
+import { db } from "../../firebase"; // Adjust path as necessary
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);

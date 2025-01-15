@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { db } from "../../config/FirebaseConfig"; 
+import { db } from "../../firebase"; 
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 

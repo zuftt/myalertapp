@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from '../../config/FirebaseConfig'; // Import the Firebase configuration
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth"; 
 
 // To remove the header in Expo Router
 export const options = {
@@ -23,7 +22,7 @@ export default function AdminLogin() {
     }
 
     setLoading(true);
-
+     const auth=getAuth()
     // Use Firebase's signInWithEmailAndPassword method
     signInWithEmailAndPassword(auth, username, password)
       .then((userCredential) => {
