@@ -69,4 +69,4 @@ Notify team members to:
 
 ---
 
-**Status:** Sensitive files currently exposed in git history. Credentials regeneration and history cleanup are required for complete security.
+**Status:** Git history has been scrubbed of `credentials.json`, `google-services.json`, and prior `firebase.js` blobs; `firebase.js` is restored using env vars only and was force-pushed to GitHub. **You still must rotate/regenerate keys in Firebase Console and Android keystore** (section 1) — history cleanup does not invalidate already-leaked secrets.
