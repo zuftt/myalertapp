@@ -74,6 +74,10 @@ The app ships with two distinct experiences:
 
 ## Architecture
 
+<p align="center">
+  <img src="docs/diagrams/architecture.svg" alt="myalertApp system architecture" width="920" />
+</p>
+
 ```
 app/
 ├─ (tabs)/                # User-facing tabs: home, maps, inbox, reports, profile
