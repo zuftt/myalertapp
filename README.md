@@ -27,6 +27,24 @@ The app ships with two distinct experiences:
 
 ---
 
+## Architecture & flow
+
+<p align="center">
+  <img src="docs/diagrams/architecture.svg" alt="Alert System architecture and flow diagram" width="100%" />
+</p>
+
+**End‑to‑end story**
+
+1. **Sign up / login** — users authenticate with Firebase Auth; admins use a separate login that lands them in the admin stack.
+2. **User submits an alert** — the *Submit Alert* form captures details + GPS coordinates and writes a document to the `Reports` collection with `verified: false`.
+3. **Admin verifies** — admin opens *Verify Reports*, reads pending submissions, and marks each one as true (genuine) or false.
+4. **Verified report becomes a public alert** — admin publishes verified reports into the `Alerts` collection; admins can also read, write and delete alerts directly from *Broadcast Alerts*.
+5. **Real‑time fan‑out** — every user device subscribes to `Alerts` via Firestore `onSnapshot`, so a new broadcast appears in the user's **Inbox** and as a **map pin** without any refresh.
+
+> The diagram source lives at [`docs/diagrams/architecture.excalidraw`](docs/diagrams/architecture.excalidraw) — open it on [excalidraw.com](https://excalidraw.com) (File → Open) to edit, then re‑export `architecture.svg` to update the rendered version.
+
+---
+
 ## Highlights for recruiters
 
 - **End‑to‑end product**: auth, data model, real‑time sync, maps, push notifications, and an admin workflow — all built and wired together.
